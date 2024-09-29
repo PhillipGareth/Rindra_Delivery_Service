@@ -1,15 +1,16 @@
 <?php
+namespace RINDRA_DELIVERY_SERVICE\Client;
 
-namespace RINDRA_DELIVERY_SERVICE\classes;
+require_once __DIR__ . '/../Configuration/Database.php'; // Ensure this path is correct
 
-use PDO;
+use RINDRA_DELIVERY_SERVICE\Database\Database;
 
 class Client {
     protected $db;
 
     public function __construct() {
-        $this->db = new PDO('mysql:host=localhost;dbname=rindra_delivery_db', 'phillipgareth', 'phillipgareth');
-        $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $database = new Database(); // Instantiate the Database class
+        $this->db = $database->getConnection(); // Get the PDO connection
     }
 
     public function register($email, $fullname, $address, $contactInfo, $password) {
@@ -18,7 +19,7 @@ class Client {
         $stmt->execute([$email]);
 
         if ($stmt->rowCount() > 0) {
-            throw new \Exception("Email already exists."); // Use Exception class from global namespace
+            throw new \Exception("Email already exists.");
         }
 
         // Hash password
@@ -26,13 +27,13 @@ class Client {
 
         // Create new client record
         $stmt = $this->db->prepare("INSERT INTO clients (email, fullname, address, contact_info, password) VALUES (?, ?, ?, ?, ?)");
-        return $stmt->execute([$email, $fullname, $address, $contactInfo, $hashedPassword]); // Return true/false for success
+        return $stmt->execute([$email, $fullname, $address, $contactInfo, $hashedPassword]);
     }
 
     public function login($email, $password) {
         $stmt = $this->db->prepare("SELECT password FROM clients WHERE email = ?");
         $stmt->execute([$email]);
-        $client = $stmt->fetch(PDO::FETCH_ASSOC);
+        $client = $stmt->fetch(\PDO::FETCH_ASSOC);
 
         if ($client && password_verify($password, $client['password'])) {
             return true; // Login successful
@@ -44,7 +45,7 @@ class Client {
     public function getIdByEmail($email) {
         $stmt = $this->db->prepare("SELECT id FROM clients WHERE email = ?");
         $stmt->execute([$email]);
-        $client = $stmt->fetch(PDO::FETCH_ASSOC);
+        $client = $stmt->fetch(\PDO::FETCH_ASSOC);
         
         return $client ? $client['id'] : null; // Return the client ID or null if not found
     }
