@@ -1,29 +1,32 @@
 <?php
-namespace RINDRA_DELIVERY_SERVICE\Driver; // Namespace declaration
-
-use RINDRA_DELIVERY_SERVICE\Database\Database;
+namespace RINDRA_DELIVERY_SERVICE\Public\Driver; // Namespace declaration
 
 // Start the session only if it hasn't been started
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Include necessary files from the correct path
-if (file_exists(__DIR__ . '/../../Configuration/Database.php')) {
-    require_once __DIR__ . '/../../Configuration/Database.php'; // Correct path to Database.php
-} else {
-    exit; // Exit silently if the file is not found
+// Check if the Database.php file exists before including
+if (!file_exists(__DIR__ . '/../../Configuration/Database.php')) {
+    die("Database.php file not found!");
 }
+
+// Include necessary files from the correct path
+require_once __DIR__ . '/../../Configuration/Database.php'; // Correct path to Database.php
+require_once __DIR__ . '/../../classes/Driver.php'; // Correct path to Driver class
+
+use RINDRA_DELIVERY_SERVICE\Database\Database;
+use RINDRA_DELIVERY_SERVICE\Driver\Driver;
+
+// Initialize database connection
+$db = new Database();
+$conn = $db->getConnection();
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'driver') {
     header('Location: ../index.php'); // Redirect to login if not logged in
     exit();
 }
-
-// Initialize database connection
-$db = new Database();
-$conn = $db->getConnection();
 
 // Create Driver object
 $driver = new Driver($conn);

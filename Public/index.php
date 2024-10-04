@@ -1,147 +1,104 @@
 <?php
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_start(); // Start the session if not already started
-}
+session_start(); // Start the session
 
-// Ensure that the path to your files is correct
-require_once '../Configuration/Database.php';
-require_once '../classes/Admin.php'; 
-require_once '../classes/Client.php';
-require_once '../classes/Driver.php';
+// Enable error reporting for debugging
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+// Include necessary files
+require_once __DIR__ . '/../Configuration/Database.php'; 
+require_once __DIR__ . '/../classes/Admin.php'; 
+require_once __DIR__ . '/../classes/Client.php'; 
+require_once __DIR__ . '/../classes/Driver.php'; 
 
 use RINDRA_DELIVERY_SERVICE\Database\Database;
+use RINDRA_DELIVERY_SERVICE\Admin\Admin;
+use RINDRA_DELIVERY_SERVICE\Client\Client;
+use RINDRA_DELIVERY_SERVICE\Driver\Driver;
 
-$db = new Database(); // Instantiate the Database class
-$conn = $db->getConnection(); // Get the database connection
+// Initialize database connection
+$db = new Database();
+$conn = $db->getConnection();
 
-// Handle login
-$loginError = ''; // Initialize login error variable
-if (isset($_POST['login'])) {
-    $email = $_POST['email'];
-    $password = $_POST['password'];
+// Check database connection
+if (!$conn) {
+    die("Database connection failed.");
+}
 
-    // Create instances of classes with the correct namespaces
-    $admin = new \RINDRA_DELIVERY_SERVICE\Admin\Admin();
-    $client = new \RINDRA_DELIVERY_SERVICE\Client\Client();
-    $driver = new \RINDRA_DELIVERY_SERVICE\Driver\Driver();
+// Handle form submission
+$error = ''; // Initialize error message
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $email = $_POST['email'] ?? '';
+    $password = $_POST['password'] ?? '';
 
-    try {
-        // Attempt to login as an admin, client, or driver
-        if ($admin->login($email, $password)) {
-            $_SESSION['user_id'] = $admin->getIdByEmail($email); // Store user ID
-            $_SESSION['role'] = 'admin'; // Set user role
-            header('Location: admin_dashboard.php'); // Redirect to admin dashboard
-            exit;
-        } elseif ($client->login($email, $password)) {
-            $_SESSION['user_id'] = $client->getIdByEmail($email); // Store user ID
-            $_SESSION['role'] = 'client'; // Set user role
-            header('Location: client_dashboard.php'); // Redirect to client dashboard
-            exit;
-        } elseif ($driver->login($email, $password)) {
-            $_SESSION['user_id'] = $driver->getIdByEmail($email); // Store user ID
-            $_SESSION['role'] = 'driver'; // Set user role
-            header('Location: driver_dashboard.php'); // Redirect to driver dashboard
-            exit;
-        } else {
-            $loginError = 'Invalid email or password'; // Error message for invalid login
-        }
-    } catch (Exception $e) {
-        $loginError = 'Error: ' . htmlspecialchars($e->getMessage()); // Catch any exceptions
+    // Check if the user is an admin
+    $admin = new Admin($conn);
+    if ($admin->login($email, $password)) {
+        $_SESSION['user_id'] = $admin->getIdByEmail($email);
+        $_SESSION['role'] = 'admin';
+        header('Location: Admin/admin_dashboard.php'); 
+        exit();
     }
+
+    // Check if the user is a client
+    $client = new Client($conn);
+    if ($client->login($email, $password)) {
+        $_SESSION['user_id'] = $client->getIdByEmail($email);
+        $_SESSION['role'] = 'client';
+        header('Location: Client/client_dashboard.php'); 
+        exit();
+    }
+
+    // Check if the user is a driver
+    $driver = new Driver($conn);
+    if ($driver->login($email, $password)) {
+        $_SESSION['user_id'] = $driver->getIdByEmail($email);
+        $_SESSION['role'] = 'driver';
+        header('Location: Driver/driver_dashboard.php'); 
+        exit();
+    }
+
+    // If login fails for all roles, set error message
+    $error = "Invalid email or password.";
 }
 ?>
 
-<!-- Combined HTML and CSS styles for login page -->
-<style>
-    body {
-        background-color: #f2f2f2;
-        font-family: Arial, sans-serif;
-    }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Login</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f2f2f2; margin: 0; padding: 20px; }
+        .container { max-width: 400px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+        h2 { text-align: center; }
+        .error { color: red; }
+        label { display: block; margin-bottom: 5px; }
+        input[type="email"], input[type="password"] { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        input[type="submit"] { background-color: #3498db; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; width: 100%; }
+        input[type="submit"]:hover { background-color: #2980b9; }
+    </style>
+</head>
+<body>
 
-    .container {
-        width: 400px;
-        margin: 50px auto;
-        padding: 20px;
-        background-color: #fff;
-        border: 1px solid #ddd;
-        border-radius: 10px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-
-    h2 {
-        text-align: center;
-        color: #333;
-    }
-
-    .form-group {
-        margin-bottom: 20px;
-    }
-
-    .form-control {
-        width: 100%;
-        height: 40px;
-        padding: 10px;
-        font-size: 16px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-    }
-
-    .btn {
-        width: 100%;
-        height: 40px;
-        padding: 10px;
-        font-size: 16px;
-        background-color: #4CAF50;
-        color: #fff;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-    }
-
-    .btn:hover {
-        background-color: #3e8e41;
-    }
-
-    .register-btn {
-        width: 100%;
-        height: 40px;
-        margin-top: 10px;
-        background-color: #007BFF;
-        color: #fff;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-    }
-
-    .register-btn:hover {
-        background-color: #0056b3;
-    }
-
-    .error {
-        color: red;
-        text-align: center;
-        font-weight: bold;
-    }
-</style>
-
-<!-- HTML form for login -->
 <div class="container">
-    <h2>Login</h2>
-    <?php if ($loginError): ?>
-        <div class="error"><?php echo $loginError; ?></div>
+    <h2>User Login</h2>
+    <?php if ($error): ?>
+        <div class="error"><?php echo htmlspecialchars($error); ?></div>
     <?php endif; ?>
-    <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="post">
-        <div class="form-group">
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" class="form-control" required>
-        </div>
-        <div class="form-group">
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" class="form-control" required>
-        </div>
-        <button type="submit" name="login" class="btn">Login</button>
-        <button type="button" onclick="window.location.href='register.php'" class="register-btn">Register</button> <!-- Register button -->
+    <form action="" method="post">
+        <label for="email">Email:</label>
+        <input type="email" name="email" required>
+        
+        <label for="password">Password:</label>
+        <input type="password" name="password" required>
+        
+        <input type="submit" value="Login">
     </form>
+    <p style="text-align: center;">Don't have an account? <a href="register.php">Register here</a></p>
 </div>
+
+</body>
+</html>

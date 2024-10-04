@@ -1,136 +1,89 @@
 <?php
 namespace RINDRA_DELIVERY_SERVICE\Admin;
 
-require_once __DIR__ . '/../Configuration/Database.php';
-
-use RINDRA_DELIVERY_SERVICE\Database\Database;
+use PDO;
+use Exception;
 
 class Admin {
-    private $db;
+    private $connection;
 
-    public function __construct() {
-        $database = new Database();
-        $this->db = $database->getConnection();
+    public function __construct($dbConnection) {
+        $this->connection = $dbConnection;
     }
 
-    public function register($email, $username, $password) {
-        $this->validateRegistrationInputs($email, $username, $password);
+    // Login method to authenticate admin
+    public function login($email, $password) {
+        try {
+            $query = "SELECT * FROM admins WHERE email = :email LIMIT 1"; // Adjust table name as necessary
+            $stmt = $this->connection->prepare($query);
+            $stmt->bindParam(':email', $email);
+            $stmt->execute();
 
-        if ($this->emailExists($email)) {
-            throw new \Exception("Email already exists.");
-        }
+            if ($stmt->rowCount() > 0) {
+                $admin = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-        $sql = "INSERT INTO users (email, username, role, password) VALUES (?, ?, 'admin', ?)";
-        $stmt = $this->db->prepare($sql);
-
-        if ($stmt->execute([$email, $username, $hashedPassword])) {
-            return "Registration successful!";
-        } else {
-            throw new \Exception("Registration failed. Please try again.");
-        }
-    }
-
-    private function validateRegistrationInputs($email, $username, $password) {
-        if (empty($email) || empty($username) || empty($password)) {
-            throw new \Exception("All fields are required.");
-        }
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            throw new \Exception("Invalid email format.");
-        }
-        if (strlen($password) < 6) {
-            throw new \Exception("Password must be at least 6 characters long.");
-        }
-    }
-
-    private function emailExists($email) {
-        $checkSql = "SELECT * FROM users WHERE email = ?";
-        $stmt = $this->db->prepare($checkSql);
-        $stmt->execute([$email]);
-        return $stmt->rowCount() > 0;
-    }
-
-    public function login($emailOrUsername, $password) {
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-            session_start();
-        }
-
-        $sql = "SELECT * FROM users WHERE email = ? OR username = ?";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([$emailOrUsername, $emailOrUsername]);
-        $user = $stmt->fetch(\PDO::FETCH_ASSOC);
-
-        if ($user) {
-            if (password_verify($password, $user['password'])) {
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['role'] = $user['role'];
-                $_SESSION['username'] = $user['username'];
-                return $user['role'];
-            } else {
-                throw new \Exception("Invalid password.");
+                // Verify password (assuming passwords are hashed)
+                if (password_verify($password, $admin['password'])) {
+                    return true; // Authentication successful
+                }
             }
-        } else {
-            throw new \Exception("User not found.");
+            return false; // Authentication failed
+        } catch (Exception $e) {
+            throw new Exception("Error during login: " . $e->getMessage());
         }
     }
 
-    public function logout() {
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-            session_start();
-        }
-        session_destroy();
-        header("Location: index.php");
-        exit();
-    }
-
-    public function getAllClients() {
-        $sql = "SELECT * FROM users WHERE role = 'client'";
-        $stmt = $this->db->query($sql);
-        return $stmt; // Return the clients
-    }
-
-    public function getAllDrivers() {
-        $sql = "SELECT * FROM users WHERE role = 'driver'";
-        $stmt = $this->db->query($sql);
-        return $stmt; // Return the drivers
-    }
-
+    // Method to get admin ID by email
     public function getIdByEmail($email) {
-        $stmt = $this->db->prepare("SELECT id FROM users WHERE email = ?");
-        $stmt->execute([$email]);
-        return $stmt->fetchColumn();
+        try {
+            $query = "SELECT id FROM admins WHERE email = :email LIMIT 1"; // Adjust table name as necessary
+            $stmt = $this->connection->prepare($query);
+            $stmt->bindParam(':email', $email);
+            $stmt->execute();
+
+            $admin = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $admin['id'] ?? null; // Return admin ID or null if not found
+        } catch (Exception $e) {
+            throw new Exception("Error fetching admin ID: " . $e->getMessage());
+        }
     }
 
-    // New methods for managing orders and drivers
-    public function assignDriver($orderId, $driverId) {
-        $sql = "UPDATE orders SET driver_id = :driver_id WHERE order_id = :order_id";
-        $stmt = $this->db->prepare($sql);
-        $stmt->bindParam(':driver_id', $driverId);
-        $stmt->bindParam(':order_id', $orderId);
-        return $stmt->execute();
+    // Method to fetch all clients
+    public function getAllClients() {
+        try {
+            $query = "SELECT * FROM clients"; // Adjust table name as necessary
+            $stmt = $this->connection->prepare($query);
+            $stmt->execute();
+
+            return $stmt->fetchAll(PDO::FETCH_ASSOC); // Return an array of clients
+        } catch (Exception $e) {
+            throw new Exception("Error fetching clients: " . $e->getMessage());
+        }
     }
 
-    public function createOrder($clientId, $address, $contactInfo) {
-        $sql = "INSERT INTO orders (client_id, address, contact_info) VALUES (:client_id, :address, :contact_info)";
-        $stmt = $this->db->prepare($sql);
-        $stmt->bindParam(':client_id', $clientId);
-        $stmt->bindParam(':address', $address);
-        $stmt->bindParam(':contact_info', $contactInfo);
-        return $stmt->execute();
+    // Method to fetch all drivers
+    public function getAllDrivers() {
+        try {
+            $query = "SELECT * FROM drivers"; // Adjust table name as necessary
+            $stmt = $this->connection->prepare($query);
+            $stmt->execute();
+
+            return $stmt->fetchAll(PDO::FETCH_ASSOC); // Return an array of drivers
+        } catch (Exception $e) {
+            throw new Exception("Error fetching drivers: " . $e->getMessage());
+        }
     }
 
+    // Method to fetch all orders
     public function getAllOrders() {
-        $sql = "SELECT * FROM orders";
-        $stmt = $this->db->query($sql);
-        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
-    }
+        try {
+            $query = "SELECT * FROM orders"; // Adjust table name as necessary
+            $stmt = $this->connection->prepare($query);
+            $stmt->execute();
 
-    public function getOrderById($orderId) {
-        $sql = "SELECT * FROM orders WHERE order_id = :order_id";
-        $stmt = $this->db->prepare($sql);
-        $stmt->bindParam(':order_id', $orderId);
-        $stmt->execute();
-        return $stmt->fetch(\PDO::FETCH_ASSOC);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC); // Return an array of orders
+        } catch (Exception $e) {
+            throw new Exception("Error fetching orders: " . $e->getMessage());
+        }
     }
 }
-?>

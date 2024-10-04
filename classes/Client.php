@@ -1,53 +1,86 @@
 <?php
 namespace RINDRA_DELIVERY_SERVICE\Client;
 
-require_once __DIR__ . '/../Configuration/Database.php'; // Ensure this path is correct
-
-use RINDRA_DELIVERY_SERVICE\Database\Database;
+use PDO;
+use Exception;
 
 class Client {
-    protected $db;
+    private $connection;
+    private $id;
+    private $email;
+    private $password;
+    private $role;
 
-    public function __construct() {
-        $database = new Database(); // Instantiate the Database class
-        $this->db = $database->getConnection(); // Get the PDO connection
+    // Constructor
+    public function __construct(PDO $dbConnection, $id = null, $email = null, $password = null, $role = 'client') {
+        $this->connection = $dbConnection; // Use provided connection
+        $this->id = $id;
+        $this->email = $email;
+        $this->password = $password; // Ideally, store hashed passwords
+        $this->role = $role;
     }
 
-    public function register($email, $fullname, $address, $contactInfo, $password) {
-        // Check if email already exists
-        $stmt = $this->db->prepare("SELECT * FROM clients WHERE email = ?");
-        $stmt->execute([$email]);
-
-        if ($stmt->rowCount() > 0) {
-            throw new \Exception("Email already exists.");
+    // Method to get client by email
+    public function getClientByEmail($email) {
+        try {
+            $stmt = $this->connection->prepare("SELECT * FROM clients WHERE email = :email");
+            $stmt->bindParam(':email', $email);
+            $stmt->execute();
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            throw new Exception("Error fetching client by email: " . $e->getMessage());
         }
-
-        // Hash password
-        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-
-        // Create new client record
-        $stmt = $this->db->prepare("INSERT INTO clients (email, fullname, address, contact_info, password) VALUES (?, ?, ?, ?, ?)");
-        return $stmt->execute([$email, $fullname, $address, $contactInfo, $hashedPassword]);
     }
 
+    // Method to create a new client
+    public function createClient($email, $password) {
+        try {
+            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+            $stmt = $this->connection->prepare("INSERT INTO clients (email, password) VALUES (:email, :password)");
+            $stmt->bindParam(':email', $email);
+            $stmt->bindParam(':password', $hashedPassword);
+            return $stmt->execute();
+        } catch (Exception $e) {
+            throw new Exception("Error creating client: " . $e->getMessage());
+        }
+    }
+
+    // Method for client login
     public function login($email, $password) {
-        $stmt = $this->db->prepare("SELECT password FROM clients WHERE email = ?");
-        $stmt->execute([$email]);
-        $client = $stmt->fetch(\PDO::FETCH_ASSOC);
-
+        $client = $this->getClientByEmail($email);
         if ($client && password_verify($password, $client['password'])) {
-            return true; // Login successful
+            $this->id = $client['id']; // Set the ID upon successful login
+            return true;
         }
-
-        return false; // Login failed
+        return false;
     }
 
+    // Method to get client ID by email
     public function getIdByEmail($email) {
-        $stmt = $this->db->prepare("SELECT id FROM clients WHERE email = ?");
-        $stmt->execute([$email]);
-        $client = $stmt->fetch(\PDO::FETCH_ASSOC);
-        
-        return $client ? $client['id'] : null; // Return the client ID or null if not found
+        try {
+            $stmt = $this->connection->prepare("SELECT id FROM clients WHERE email = :email LIMIT 1");
+            $stmt->bindParam(':email', $email);
+            $stmt->execute();
+
+            $client = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $client['id'] ?? null; // Return client ID or null if not found
+        } catch (Exception $e) {
+            throw new Exception("Error fetching client ID: " . $e->getMessage());
+        }
     }
+
+    // Getters
+    public function getId() {
+        return $this->id;
+    }
+
+    public function getEmail() {
+        return $this->email;
+    }
+
+    public function getRole() {
+        return $this->role;
+    }
+
+    // Additional methods as required...
 }
-?>
