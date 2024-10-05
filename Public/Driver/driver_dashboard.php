@@ -1,5 +1,5 @@
 <?php
-namespace RINDRA_DELIVERY_SERVICE\Public\Driver; // Namespace declaration
+namespace RINDRA_DELIVERY_SERVICE\Public\Driver;
 
 // Start the session only if it hasn't been started
 if (session_status() === PHP_SESSION_NONE) {
@@ -12,8 +12,8 @@ if (!file_exists(__DIR__ . '/../../Configuration/Database.php')) {
 }
 
 // Include necessary files from the correct path
-require_once __DIR__ . '/../../Configuration/Database.php'; // Correct path to Database.php
-require_once __DIR__ . '/../../classes/Driver.php'; // Correct path to Driver class
+require_once __DIR__ . '/../../Configuration/Database.php'; // Path to Database.php
+require_once __DIR__ . '/../../classes/Driver.php'; // Path to Driver class
 
 use RINDRA_DELIVERY_SERVICE\Database\Database;
 use RINDRA_DELIVERY_SERVICE\Driver\Driver;
@@ -46,47 +46,74 @@ if (!$driverDetails) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Driver Dashboard</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f2f2f2;
-            margin: 0;
-            padding: 20px;
+            background-color: #f8f9fa;
         }
-        .container {
-            max-width: 600px;
-            margin: auto;
-            background: #fff;
+        .dashboard-header {
+            background-color: #007bff;
+            color: white;
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        h2 {
             text-align: center;
         }
-        .driver-info {
-            margin-top: 20px;
-        }
-        a {
-            text-decoration: none;
-            color: #007BFF;
-        }
-        a:hover {
-            text-decoration: underline;
+        .card {
+            margin: 20px 0;
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>Driver Dashboard</h2>
-    <div class="driver-info">
-        <h3>Welcome, <?php echo htmlspecialchars($driverDetails['username']); ?></h3>
-        <p><strong>Driver ID:</strong> <?php echo htmlspecialchars($driverDetails['id']); ?></p>
-        <p><strong>Email:</strong> <?php echo htmlspecialchars($driverDetails['email']); ?></p>
-    </div>
-    <p style="text-align: center;"><a href="../index.php?logout=true">Logout</a></p> <!-- Logout link -->
+<div class="dashboard-header">
+    <h1>Welcome, <?php echo htmlspecialchars($driverDetails['username']); ?>!</h1>
 </div>
 
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-header">
+                    Driver ID
+                </div>
+                <div class="card-body">
+                    <h2 class="card-title"><?php echo htmlspecialchars($driverDetails['id']); ?></h2>
+                    <p class="card-text">Your unique driver identifier</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-header">
+                    Email
+                </div>
+                <div class="card-body">
+                    <h2 class="card-title"><?php echo htmlspecialchars($driverDetails['email']); ?></h2>
+                    <p class="card-text">Your registered email address</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-header">
+                    Actions
+                </div>
+                <div class="card-body">
+                    <a href="driver_assigneddriver.php" class="btn btn-info mb-2">View Assigned Drivers</a>
+                    <a href="driver_updatestatus.php" class="btn btn-warning">Update Delivery Status</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mt-4">
+        <a href="../index.php?logout=true" class="btn btn-secondary">Logout</a>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

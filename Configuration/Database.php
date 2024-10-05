@@ -25,7 +25,6 @@ class Database {
             $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
             $this->pdo->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
         } catch (\PDOException $exception) {
-            // Log the error message
             error_log("Connection error: " . $exception->getMessage());
             throw new \Exception("Connection error: " . $exception->getMessage());
         }
@@ -50,15 +49,14 @@ class Database {
         return password_hash($password, PASSWORD_DEFAULT);
     }
 
-    public function createAdmin($email, $password, $fullname, $role) {
+    public function createAdmin($email, $password, $username) {
         $hashedPassword = $this->hashPassword($password);
-        $query = "INSERT INTO Admins (email, password, fullname, role) VALUES (:email, :password, :fullname, :role)";
+        $query = "INSERT INTO admins (email, password, username) VALUES (:email, :password, :username)";
         $stmt = $this->pdo->prepare($query);
         return $stmt->execute([
             ':email' => $email,
             ':password' => $hashedPassword,
-            ':fullname' => $fullname,
-            ':role' => $role
+            ':username' => $username
         ]);
     }
 }

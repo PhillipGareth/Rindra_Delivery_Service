@@ -1,10 +1,12 @@
 <?php
-session_start(); // Start the session
-
-// Enable error reporting for debugging
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+// Enable error reporting
 error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Start the session
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Include necessary files
 require_once __DIR__ . '/../Configuration/Database.php'; 
@@ -21,13 +23,8 @@ use RINDRA_DELIVERY_SERVICE\Driver\Driver;
 $db = new Database();
 $conn = $db->getConnection();
 
-// Check database connection
-if (!$conn) {
-    die("Database connection failed.");
-}
+$error = '';
 
-// Handle form submission
-$error = ''; // Initialize error message
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'] ?? '';
     $password = $_POST['password'] ?? '';
@@ -59,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
-    // If login fails for all roles, set error message
+    // If login fails for all roles
     $error = "Invalid email or password.";
 }
 ?>

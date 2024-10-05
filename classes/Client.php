@@ -6,53 +6,37 @@ use Exception;
 
 class Client {
     private $connection;
-    private $id;
-    private $email;
-    private $password;
-    private $role;
 
-    // Constructor
-    public function __construct(PDO $dbConnection, $id = null, $email = null, $password = null, $role = 'client') {
-        $this->connection = $dbConnection; // Use provided connection
-        $this->id = $id;
-        $this->email = $email;
-        $this->password = $password; // Ideally, store hashed passwords
-        $this->role = $role;
-    }
-
-    // Method to get client by email
-    public function getClientByEmail($email) {
-        try {
-            $stmt = $this->connection->prepare("SELECT * FROM clients WHERE email = :email");
-            $stmt->bindParam(':email', $email);
-            $stmt->execute();
-            return $stmt->fetch(PDO::FETCH_ASSOC);
-        } catch (Exception $e) {
-            throw new Exception("Error fetching client by email: " . $e->getMessage());
-        }
-    }
-
-    // Method to create a new client
-    public function createClient($email, $password) {
-        try {
-            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $this->connection->prepare("INSERT INTO clients (email, password) VALUES (:email, :password)");
-            $stmt->bindParam(':email', $email);
-            $stmt->bindParam(':password', $hashedPassword);
-            return $stmt->execute();
-        } catch (Exception $e) {
-            throw new Exception("Error creating client: " . $e->getMessage());
-        }
+    public function __construct(PDO $dbConnection) {
+        $this->connection = $dbConnection;
     }
 
     // Method for client login
     public function login($email, $password) {
         $client = $this->getClientByEmail($email);
         if ($client && password_verify($password, $client['password'])) {
-            $this->id = $client['id']; // Set the ID upon successful login
-            return true;
+            return true; // Login successful
         }
-        return false;
+        return false; // Login failed
+    }
+
+    // Method to create a new client
+    public function createUser($email, $password, $username) {
+        try {
+            // Hash the password
+            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+
+            // Prepare the SQL statement
+            $stmt = $this->connection->prepare("INSERT INTO clients (email, password, username) VALUES (:email, :password, :username)");
+            $stmt->bindParam(':email', $email);
+            $stmt->bindParam(':password', $hashedPassword);
+            $stmt->bindParam(':username', $username);
+
+            // Execute the statement
+            return $stmt->execute(); // Returns true on success
+        } catch (Exception $e) {
+            throw new Exception("Error creating client: " . $e->getMessage());
+        }
     }
 
     // Method to get client ID by email
@@ -69,18 +53,17 @@ class Client {
         }
     }
 
-    // Getters
-    public function getId() {
-        return $this->id;
+    // Method to get client details by email
+    private function getClientByEmail($email) {
+        try {
+            $stmt = $this->connection->prepare("SELECT * FROM clients WHERE email = :email");
+            $stmt->bindParam(':email', $email);
+            $stmt->execute();
+            return $stmt->fetch(PDO::FETCH_ASSOC); // Return client details
+        } catch (Exception $e) {
+            throw new Exception("Error fetching client by email: " . $e->getMessage());
+        }
     }
 
-    public function getEmail() {
-        return $this->email;
-    }
-
-    public function getRole() {
-        return $this->role;
-    }
-
-    // Additional methods as required...
+    // Additional methods can be added here as needed
 }

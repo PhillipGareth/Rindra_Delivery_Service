@@ -1,1 +1,0 @@
- # Rindra Delivery Service

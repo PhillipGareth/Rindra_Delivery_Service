@@ -1,111 +1,112 @@
 <?php
-// register.php
+// Check if session is already started
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-require_once '../Configuration/Database.php'; // Adjust this path if necessary
+// Enable error reporting
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Include necessary files
+require_once __DIR__ . '/../Configuration/Database.php'; 
+require_once __DIR__ . '/../classes/Admin.php'; 
+require_once __DIR__ . '/../classes/Client.php'; 
+require_once __DIR__ . '/../classes/Driver.php'; 
 
 use RINDRA_DELIVERY_SERVICE\Database\Database;
+use RINDRA_DELIVERY_SERVICE\Admin\Admin;
+use RINDRA_DELIVERY_SERVICE\Client\Client;
+use RINDRA_DELIVERY_SERVICE\Driver\Driver;
 
-// Start the session
-session_start();
-
-// Create a new database connection
+// Initialize database connection
 $db = new Database();
 $conn = $db->getConnection();
 
+// Handle registration form submission
+$error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    function validate($data) {
-        return htmlspecialchars(stripslashes(trim($data)));
-    }
+    $email = $_POST['email'] ?? '';
+    $password = $_POST['password'] ?? '';
+    $username = $_POST['username'] ?? '';
+    $role = $_POST['role'] ?? ''; // New field for user role
 
-    // Validate input
-    $username = validate($_POST['uname']);
-    $email = validate($_POST['email']);
-    $pass = validate($_POST['password']);
-    $role = validate($_POST['role']); // Get the selected role
-
-    // Check for empty fields
-    if (empty($username) || empty($email) || empty($pass) || empty($role)) {
-        header("Location: register.php?error=All fields are required");
-        exit();
-    }
-
-    // Check if user already exists in both tables
-    $stmt = $conn->prepare("SELECT email FROM users WHERE email = ? UNION SELECT email FROM admins WHERE email = ? UNION SELECT email FROM drivers WHERE email = ?");
-    $stmt->execute([$email, $email, $email]);
-    if ($stmt->rowCount() > 0) {
-        header("Location: register.php?error=Email already exists");
-        exit();
-    }
-
-    // Prepare SQL statement based on role
-    if ($role === 'Admin') {
-        $stmt = $conn->prepare("INSERT INTO admins (username, email, password) VALUES (?, ?, ?)");
-    } elseif ($role === 'Client') {
-        $stmt = $conn->prepare("INSERT INTO clients (username, email, password) VALUES (?, ?, ?)");
-    } elseif ($role === 'Driver') {
-        $stmt = $conn->prepare("INSERT INTO drivers (username, email, password) VALUES (?, ?, ?)");
+    // Determine user type and create user accordingly
+    if ($role === 'client') {
+        $client = new Client($conn);
+        if ($client->createUser($email, $password, $username)) {
+            header('Location: index.php'); // Redirect to login page
+            exit();
+        } else {
+            $error = "Registration failed for client. Please try again.";
+        }
+    } elseif ($role === 'admin') {
+        $admin = new Admin($conn);
+        if ($admin->createUser($email, $password, $username)) {
+            header('Location: index.php'); // Redirect to login page
+            exit();
+        } else {
+            $error = "Registration failed for admin. Please try again.";
+        }
+    } elseif ($role === 'driver') {
+        $driver = new Driver($conn);
+        if ($driver->createUser($email, $password, $username)) {
+            header('Location: index.php'); // Redirect to login page
+            exit();
+        } else {
+            $error = "Registration failed for driver. Please try again.";
+        }
     } else {
-        header("Location: register.php?error=Invalid role selected");
-        exit();
-    }
-
-    $hashedPassword = password_hash($pass, PASSWORD_DEFAULT); // Hash the password
-
-    // Bind parameters and execute
-    if ($stmt->execute([$username, $email, $hashedPassword])) {
-        // Set session variables based on role
-        $_SESSION['user_id'] = $conn->lastInsertId();
-        $_SESSION['role'] = strtolower($role); // Store role in lowercase for consistency
-
-        // Redirect to the appropriate dashboard
-        header("Location: " . strtolower($role) . "_dashboard.php");
-        exit();
-    } else {
-        header("Location: register.php?error=Registration failed");
-        exit();
+        $error = "Invalid role selected.";
     }
 }
 ?>
 
-<!-- HTML form for registration -->
-<style>
-    body { font-family: Arial, sans-serif; background-color: #f2f2f2; margin: 0; padding: 0; }
-    .container { max-width: 400px; margin: 100px auto; padding: 20px; background-color: white; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-    h2 { text-align: center; color: #333; }
-    .error { color: red; text-align: center; }
-    .form-group { margin: 15px 0; }
-    label { display: block; margin-bottom: 5px; }
-    input[type="text"], input[type="password"], input[type="email"], select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
-    input[type="submit"] { width: 100%; padding: 10px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; }
-    input[type="submit"]:hover { background-color: #45a049; }
-</style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Registration</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f2f2f2; margin: 0; padding: 20px; }
+        .container { max-width: 400px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+        h2 { text-align: center; }
+        .error { color: red; }
+        label { display: block; margin-bottom: 5px; }
+        input[type="email"], input[type="password"], input[type="text"], select { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        input[type="submit"] { background-color: #3498db; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; width: 100%; }
+        input[type="submit"]:hover { background-color: #2980b9; }
+    </style>
+</head>
+<body>
 
 <div class="container">
-    <h2>Register</h2>
-    <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="post">
-        <div class="form-group">
-            <label for="uname">User Name:</label>
-            <input type="text" id="uname" name="uname" required>
-        </div>
-        <div class="form-group">
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" required>
-        </div>
-        <div class="form-group">
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
-        </div>
-        <div class="form-group">
-            <label for="role">Role:</label>
-            <select id="role" name="role" required>
-                <option value="">Select a role</option>
-                <option value="Client">Client</option>
-                <option value="Admin">Admin</option>
-                <option value="Driver">Driver</option>
-            </select>
-        </div>
+    <h2>User Registration</h2>
+    <?php if ($error): ?>
+        <div class="error"><?php echo htmlspecialchars($error); ?></div>
+    <?php endif; ?>
+    <form action="" method="post">
+        <label for="username">Username:</label>
+        <input type="text" name="username" required>
+
+        <label for="email">Email:</label>
+        <input type="email" name="email" required>
+        
+        <label for="password">Password:</label>
+        <input type="password" name="password" required>
+        
+        <label for="role">Select User Role:</label>
+        <select name="role" required>
+            <option value="client">Client</option>
+            <option value="admin">Admin</option>
+            <option value="driver">Driver</option>
+        </select>
+        
         <input type="submit" value="Register">
-        <?php if (isset($_GET['error'])) { echo '<p class="error">' . htmlspecialchars($_GET['error']) . '</p>'; } ?>
     </form>
-    <p style="text-align: center;">Already have an account? <a href="index.php">Go to Login</a></p>
+    <p style="text-align: center;">Already have an account? <a href="index.php">Login here</a></p>
 </div>
+
+</body>
+</html>

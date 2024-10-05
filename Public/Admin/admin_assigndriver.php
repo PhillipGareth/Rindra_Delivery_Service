@@ -39,7 +39,7 @@ $orders = $conn->query("SELECT * FROM orders")->fetchAll(PDO::FETCH_ASSOC);
             <select id="order_id" name="order_id" class="form-control" required>
                 <option value="">Select an order</option>
                 <?php foreach ($orders as $order): ?>
-                    <option value="<?php echo $order['order_id']; ?>"><?php echo $order['address']; ?></option>
+                    <option value="<?php echo $order['order_id']; ?>"><?php echo htmlspecialchars($order['address']); ?></option>
                 <?php endforeach; ?>
             </select>
         </div>
@@ -49,7 +49,7 @@ $orders = $conn->query("SELECT * FROM orders")->fetchAll(PDO::FETCH_ASSOC);
             <select id="driver_id" name="driver_id" class="form-control" required>
                 <option value="">Select a driver</option>
                 <?php foreach ($drivers as $driver): ?>
-                    <option value="<?php echo $driver['id']; ?>"><?php echo $driver['username']; ?></option>
+                    <option value="<?php echo $driver['id']; ?>"><?php echo htmlspecialchars($driver['username']); ?></option>
                 <?php endforeach; ?>
             </select>
         </div>

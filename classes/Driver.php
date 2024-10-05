@@ -1,89 +1,81 @@
 <?php
-namespace RINDRA_DELIVERY_SERVICE\Driver; // Namespace declaration
+namespace RINDRA_DELIVERY_SERVICE\Driver;
 
-use RINDRA_DELIVERY_SERVICE\Database\Database;
+use PDO;
+use Exception;
 
-// Start the session only if it hasn't been started
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+class Driver {
+    private $connection;
+
+    public function __construct(PDO $dbConnection) {
+        $this->connection = $dbConnection;
+    }
+
+    // Method for driver login
+    public function login($email, $password) {
+        $driver = $this->getDriverByEmail($email);
+        if ($driver && password_verify($password, $driver['password'])) {
+            return true; // Login successful
+        }
+        return false; // Login failed
+    }
+
+    // Method to get driver ID by email
+    public function getIdByEmail($email) {
+        try {
+            $stmt = $this->connection->prepare("SELECT id FROM drivers WHERE email = :email LIMIT 1");
+            $stmt->bindParam(':email', $email);
+            $stmt->execute();
+
+            $driver = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $driver['id'] ?? null; // Return driver ID or null if not found
+        } catch (Exception $e) {
+            throw new Exception("Error fetching driver ID: " . $e->getMessage());
+        }
+    }
+
+    // Method to get driver details by email
+    private function getDriverByEmail($email) {
+        try {
+            $stmt = $this->connection->prepare("SELECT * FROM drivers WHERE email = :email");
+            $stmt->bindParam(':email', $email);
+            $stmt->execute();
+            return $stmt->fetch(PDO::FETCH_ASSOC); // Return driver details
+        } catch (Exception $e) {
+            throw new Exception("Error fetching driver by email: " . $e->getMessage());
+        }
+    }
+
+    // Method to get driver details by ID
+    public function getDriverById($id) {
+        try {
+            $stmt = $this->connection->prepare("SELECT * FROM drivers WHERE id = :id LIMIT 1");
+            $stmt->bindParam(':id', $id);
+            $stmt->execute();
+            return $stmt->fetch(PDO::FETCH_ASSOC); // Return driver details
+        } catch (Exception $e) {
+            throw new Exception("Error fetching driver by ID: " . $e->getMessage());
+        }
+    }
+
+    // Method to create a new driver
+    public function createUser($email, $password, $username) {
+        try {
+            // Hash the password
+            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+
+            // Prepare the SQL statement
+            $stmt = $this->connection->prepare("INSERT INTO drivers (email, password, username) VALUES (:email, :password, :username)");
+            $stmt->bindParam(':email', $email);
+            $stmt->bindParam(':password', $hashedPassword);
+            $stmt->bindParam(':username', $username);
+
+            // Execute the statement
+            return $stmt->execute(); // Returns true on success
+        } catch (Exception $e) {
+            throw new Exception("Error creating driver: " . $e->getMessage());
+        }
+    }
+
+    // Additional methods can be added here as needed
 }
-
-// Include necessary files from the correct path
-if (file_exists(__DIR__ . '/../../Configuration/Database.php')) {
-    require_once __DIR__ . '/../../Configuration/Database.php'; // Correct path to Database.php
-} else {
-    exit; // Exit silently if the file is not found
-}
-
-// Check if user is logged in
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'driver') {
-    header('Location: ../index.php'); // Redirect to login if not logged in
-    exit();
-}
-
-// Initialize database connection
-$db = new Database();
-$conn = $db->getConnection();
-
-// Create Driver object
-$driver = new Driver($conn);
-
-// Get driver details
-$driverId = $_SESSION['user_id'];
-$driverDetails = $driver->getDriverById($driverId); // Retrieve driver details
-
-if (!$driverDetails) {
-    die("Driver not found."); // Handle case where driver does not exist
-}
-?>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Driver Dashboard</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f2f2f2;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 600px;
-            margin: auto;
-            background: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        h2 {
-            text-align: center;
-        }
-        .driver-info {
-            margin-top: 20px;
-        }
-        a {
-            text-decoration: none;
-            color: #007BFF;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <h2>Driver Dashboard</h2>
-    <div class="driver-info">
-        <h3>Welcome, <?php echo htmlspecialchars($driverDetails['username']); ?></h3>
-        <p><strong>Driver ID:</strong> <?php echo htmlspecialchars($driverDetails['id']); ?></p>
-        <p><strong>Email:</strong> <?php echo htmlspecialchars($driverDetails['email']); ?></p>
-    </div>
-    <p style="text-align: center;"><a href="../index.php?logout=true">Logout</a></p> <!-- Logout link -->
-</div>
-
-</body>
-</html>
