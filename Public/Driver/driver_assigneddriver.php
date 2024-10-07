@@ -1,4 +1,5 @@
 <?php
+// driver_assigneddriver.php
 session_start(); // Start the session
 
 // Check if the user is logged in and has the correct role
@@ -23,10 +24,12 @@ $driver = new \RINDRA_DELIVERY_SERVICE\Driver\Driver($conn); // Pass the databas
 try {
     // Ensure the user_id is a valid integer
     $userId = (int) $_SESSION['user_id'];
-    $driverDetails = $driver->getDriverById($userId); 
+    $driverDetails = $driver->getDriverById($userId);
 
-    // Fetch assigned drivers (you may need to implement this method)
-    $assignedDrivers = []; // Replace this with the actual method to fetch assigned drivers
+    // Fetch assigned orders for the driver
+    $stmt = $conn->prepare("SELECT orders.* FROM orders WHERE orders.driver_id = :driver_id");
+    $stmt->execute([':driver_id' => $userId]);
+    $assignedOrders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Display the dashboard
     ?>
@@ -35,7 +38,7 @@ try {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Assigned Drivers</title>
+        <title>Assigned Deliveries</title>
         <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
         <style>
             body {
@@ -60,34 +63,34 @@ try {
     <body>
 
     <div class="container">
-        <h1 class="text-center">Assigned Drivers</h1>
+        <h1 class="text-center">Assigned Deliveries</h1>
         <div class="text-center">
             <a href="driver_dashboard.php" class="btn btn-secondary">Back to Dashboard</a>
             <button class="btn btn-logout" onclick="logout()">Logout</button>
         </div>
 
         <div class="mt-4">
-            <?php if (!empty($assignedDrivers)): ?>
+            <?php if (!empty($assignedOrders)): ?>
                 <table class="table table-bordered">
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Username</th>
-                            <th>Email</th>
+                            <th>Order ID</th>
+                            <th>Address</th>
+                            <th>Contact Info</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($assignedDrivers as $driver): ?>
+                        <?php foreach ($assignedOrders as $order): ?>
                             <tr>
-                                <td><?php echo htmlspecialchars($driver['id']); ?></td>
-                                <td><?php echo htmlspecialchars($driver['username']); ?></td>
-                                <td><?php echo htmlspecialchars($driver['email']); ?></td>
+                                <td><?php echo htmlspecialchars($order['order_id']); ?></td>
+                                <td><?php echo htmlspecialchars($order['address']); ?></td>
+                                <td><?php echo htmlspecialchars($order['contact_info']); ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
                 </table>
             <?php else: ?>
-                <p>No assigned drivers found.</p>
+                <p>No assigned deliveries found.</p>
             <?php endif; ?>
         </div>
     </div>

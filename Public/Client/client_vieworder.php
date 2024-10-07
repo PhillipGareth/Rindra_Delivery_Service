@@ -44,6 +44,7 @@ $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <th>Address</th>
                     <th>Contact Info</th>
                     <th>Status</th>
+                    <th>Date Ordered</th> <!-- Added Date Ordered Column -->
                 </tr>
             </thead>
             <tbody>
@@ -52,7 +53,8 @@ $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <td><?php echo htmlspecialchars($order['order_id']); ?></td>
                         <td><?php echo htmlspecialchars($order['address']); ?></td>
                         <td><?php echo htmlspecialchars($order['contact_info']); ?></td>
-                        <td><?php echo htmlspecialchars($order['status'] ?? 'Pending'); ?></td>
+                        <td><?php echo htmlspecialchars($order['status']); ?></td>
+                        <td><?php echo htmlspecialchars($order['date_ordered'] ?? 'N/A'); ?></td> <!-- Displaying Date Ordered -->
                     </tr>
                 <?php endforeach; ?>
             </tbody>

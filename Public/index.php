@@ -67,15 +67,73 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Login</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f2f2f2; margin: 0; padding: 20px; }
-        .container { max-width: 400px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
-        h2 { text-align: center; }
-        .error { color: red; }
-        label { display: block; margin-bottom: 5px; }
-        input[type="email"], input[type="password"] { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 5px; }
-        input[type="submit"] { background-color: #3498db; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; width: 100%; }
-        input[type="submit"]:hover { background-color: #2980b9; }
+        body {
+            font-family: Arial, sans-serif; 
+            background-color: #3498db; /* Background color */
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0;
+        }
+        .container {
+            max-width: 400px; /* Set max width of the form */
+            background: #fff; 
+            padding: 40px; /* Increased padding for spaciousness */
+            border-radius: 10px; 
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        }
+        h2 {
+            text-align: center; 
+            margin-bottom: 20px;
+            color: #333; /* Heading color */
+        }
+        .error { 
+            color: red; 
+            text-align: center; 
+            margin-bottom: 15px; 
+        }
+        label { 
+            display: block; 
+            margin-bottom: 5px; 
+            font-weight: bold; /* Bold labels */
+            color: #555; /* Label color */
+        }
+        input[type="email"], input[type="password"] { 
+            width: 100%; 
+            padding: 12px; 
+            margin-bottom: 15px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
+            font-size: 16px; /* Increased font size for inputs */
+        }
+        input[type="submit"] { 
+            background-color: #2980b9; 
+            color: white; 
+            border: none; 
+            padding: 12px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            width: 100%; 
+            font-size: 16px; /* Increased font size for button */
+        }
+        input[type="submit"]:hover { 
+            background-color: #1c6694; 
+        }
+        p {
+            text-align: center; 
+            margin-top: 20px; 
+        }
+        a {
+            color: #3498db; 
+            text-decoration: none; 
+            font-weight: bold; /* Bold links */
+        }
+        a:hover {
+            text-decoration: underline; /* Underline on hover */
+        }
     </style>
 </head>
 <body>
@@ -94,7 +152,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         <input type="submit" value="Login">
     </form>
-    <p style="text-align: center;">Don't have an account? <a href="register.php">Register here</a></p>
+    <p>Don't have an account? <a href="register.php">Register here</a></p>
 </div>
 
 </body>

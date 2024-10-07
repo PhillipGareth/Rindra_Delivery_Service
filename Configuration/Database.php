@@ -1,10 +1,10 @@
 <?php
-namespace RINDRA_DELIVERY_SERVICE\Database; // Namespace declaration
+namespace RINDRA_DELIVERY_SERVICE\Database; // Use a namespace for better organization
 
 // Define database connection settings
 define('DB_HOST', 'localhost');
 define('DB_USERNAME', 'root');
-define('DB_PASSWORD', ''); // Ensure password is set correctly, if any
+define('DB_PASSWORD', ''); // Set your password if applicable
 define('DB_NAME', 'rindra_delivery_db');
 
 class Database {

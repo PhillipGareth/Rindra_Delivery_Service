@@ -43,4 +43,19 @@ class Admin {
             throw new Exception("Error fetching admin ID: " . $e->getMessage());
         }
     }
+
+    public function createUser($email, $password, $username) {
+        try {
+            // Hash the password before storing it
+            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+            $query = "INSERT INTO admins (email, password, username) VALUES (:email, :password, :username)";
+            $stmt = $this->connection->prepare($query);
+            $stmt->bindParam(':email', $email);
+            $stmt->bindParam(':password', $hashedPassword);
+            $stmt->bindParam(':username', $username);
+            return $stmt->execute();
+        } catch (Exception $e) {
+            throw new Exception("Error creating admin: " . $e->getMessage());
+        }
+    }
 }

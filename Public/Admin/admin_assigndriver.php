@@ -1,6 +1,4 @@
 <?php
-// admin_assigndriver.php
-
 session_start();
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header("Location: ../index.php?error=You must log in as an admin to access this page.");
@@ -17,8 +15,13 @@ $conn = $db->getConnection();
 // Fetch all drivers
 $drivers = $conn->query("SELECT * FROM drivers")->fetchAll(PDO::FETCH_ASSOC);
 
-// Fetch all orders
-$orders = $conn->query("SELECT * FROM orders")->fetchAll(PDO::FETCH_ASSOC);
+// Fetch all orders where driver_id is NULL
+$orders = $conn->query("SELECT * FROM orders WHERE driver_id IS NULL")->fetchAll(PDO::FETCH_ASSOC);
+
+// Debugging: Check if orders are fetched correctly
+if (empty($orders)) {
+    echo "<p>No orders available to assign.</p>";
+}
 ?>
 
 <!DOCTYPE html>
@@ -39,7 +42,9 @@ $orders = $conn->query("SELECT * FROM orders")->fetchAll(PDO::FETCH_ASSOC);
             <select id="order_id" name="order_id" class="form-control" required>
                 <option value="">Select an order</option>
                 <?php foreach ($orders as $order): ?>
-                    <option value="<?php echo $order['order_id']; ?>"><?php echo htmlspecialchars($order['address']); ?></option>
+                    <option value="<?php echo $order['order_id']; ?>">
+                        <?php echo htmlspecialchars($order['address']); ?>
+                    </option>
                 <?php endforeach; ?>
             </select>
         </div>
@@ -49,7 +54,9 @@ $orders = $conn->query("SELECT * FROM orders")->fetchAll(PDO::FETCH_ASSOC);
             <select id="driver_id" name="driver_id" class="form-control" required>
                 <option value="">Select a driver</option>
                 <?php foreach ($drivers as $driver): ?>
-                    <option value="<?php echo $driver['id']; ?>"><?php echo htmlspecialchars($driver['username']); ?></option>
+                    <option value="<?php echo $driver['id']; ?>">
+                        <?php echo htmlspecialchars($driver['driver_name']); ?>
+                    </option>
                 <?php endforeach; ?>
             </select>
         </div>

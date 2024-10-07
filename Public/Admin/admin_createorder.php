@@ -1,38 +1,57 @@
 <?php
-// admin_createorder.php
+namespace RINDRA_DELIVERY_SERVICE\Public\Admin;
 
-session_start();
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    header("Location: ../index.php?error=You must log in as an admin to access this page.");
-    exit();
-}
-
-require_once '../../Configuration/Database.php';
+// Adjusting the path based on your directory structure
+require_once '../../Configuration/Database.php'; // Correct path to Database.php
 
 use RINDRA_DELIVERY_SERVICE\Database\Database;
 
+session_start();
+
 $db = new Database();
-$conn = $db->getConnection();
+$pdo = $db->getConnection();
 
-$error = '';  // Initialize error variable
+// Initialize variables
+$client_id = '';
+$address = '';
+$contact_info = '';
+$status = 'Pending'; // Default status
+$client_name = '';
+$driver_id = NULL; // Assuming you want to set this later
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Check if all fields are set and not empty
-    if (isset($_POST['client_id'], $_POST['address'], $_POST['contact_info'])) {
-        $client_id = $_POST['client_id'];
-        $address = $_POST['address'];
-        $contact_info = $_POST['contact_info'];
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $client_id = $_POST['client_id'];
+    $address = $_POST['address'];
+    $contact_info = $_POST['contact_info'];
+    $client_name = $_POST['client_name']; // Assuming this is passed from the form
 
-        // SQL statement to insert the order
-        $stmt = $conn->prepare("INSERT INTO orders (client_id, address, contact_info) VALUES (?, ?, ?)");
-        if ($stmt->execute([$client_id, $address, $contact_info])) {
-            header("Location: admin_vieworder.php?success=Order created successfully");
-            exit();
-        } else {
-            $error = "Failed to create order";
+    // Validate if the client_id exists in clients table
+    $checkClientQuery = "SELECT id FROM clients WHERE id = :client_id";
+    $stmt = $pdo->prepare($checkClientQuery);
+    $stmt->execute([':client_id' => $client_id]);
+    
+    if ($stmt->rowCount() > 0) {
+        // If client exists, proceed to insert order
+        try {
+            $insertOrderQuery = "INSERT INTO orders (client_id, address, contact_info, driver_id, status, client_name) 
+                                 VALUES (:client_id, :address, :contact_info, :driver_id, :status, :client_name)";
+            $stmt = $pdo->prepare($insertOrderQuery);
+            $stmt->execute([
+                ':client_id' => $client_id,
+                ':address' => $address,
+                ':contact_info' => $contact_info,
+                ':driver_id' => $driver_id,
+                ':status' => $status,
+                ':client_name' => $client_name
+            ]);
+            echo "<div class='alert alert-success'>Order created successfully!</div>";
+        } catch (\PDOException $e) {
+            // Handle any errors during the insert
+            echo "<div class='alert alert-danger'>Error creating order: " . $e->getMessage() . "</div>";
         }
     } else {
-        $error = "All fields are required.";
+        // Handle the case where the client does not exist
+        echo "<div class='alert alert-danger'>Error: Client with ID $client_id does not exist.</div>";
     }
 }
 ?>
@@ -43,34 +62,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Order</title>
+    <!-- Bootstrap CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .container {
+            margin-top: 50px;
+            max-width: 600px;
+        }
+        .form-control, .btn {
+            margin-bottom: 15px;
+        }
+    </style>
 </head>
 <body>
+    <div class="container">
+        <h2 class="text-center">Create Order</h2>
+        <form action="" method="POST">
+            <div class="form-group row">
+                <div class="col-md-6">
+                    <label for="client_id">Client ID:</label>
+                    <input type="number" name="client_id" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="client_name">Client Name:</label>
+                    <input type="text" name="client_name" class="form-control" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="address">Address:</label>
+                <input type="text" name="address" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="contact_info">Contact Info:</label>
+                <input type="text" name="contact_info" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Create Order</button>
+        </form>
+        <a href="admin_dashboard.php" class="btn btn-secondary btn-block">Return to Dashboard</a> <!-- Return to Dashboard Button -->
+    </div>
 
-<div class="container mt-5">
-    <h1>Create Order</h1>
-    <form action="" method="post">
-        <div class="form-group">
-            <label for="client_id">Client ID:</label>
-            <input type="number" id="client_id" name="client_id" class="form-control" required>
-        </div>
-        <div class="form-group">
-            <label for="address">Address:</label>
-            <input type="text" id="address" name="address" class="form-control" required>
-        </div>
-        <div class="form-group">
-            <label for="contact_info">Contact Information:</label>
-            <input type="text" id="contact_info" name="contact_info" class="form-control" required>
-        </div>
-
-        <button type="submit" class="btn btn-success">Create Order</button>
-    </form>
-    <?php if ($error) { echo "<p class='text-danger'>$error</p>"; } ?>
-    <a href="admin_dashboard.php" class="btn btn-secondary mt-3">Back to Dashboard</a>
-</div>
-
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

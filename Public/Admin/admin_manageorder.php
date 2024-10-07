@@ -24,8 +24,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_order_id'])) {
     exit();
 }
 
-// Fetch orders from the database
-$stmt = $conn->prepare("SELECT * FROM orders");
+// Fetch orders from the database, including driver_name and client_name
+$query = "
+    SELECT o.*, d.driver_name, c.client_name 
+    FROM orders o 
+    LEFT JOIN drivers d ON o.driver_id = d.id 
+    LEFT JOIN clients c ON o.client_id = c.id"; // Query to join orders with drivers and clients
+$stmt = $conn->prepare($query);
 $stmt->execute();
 $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
@@ -59,6 +64,8 @@ $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <tr>
                     <th>Order ID</th>
                     <th>Client ID</th>
+                    <th>Client Name</th>
+                    <th>Driver Name</th>
                     <th>Address</th>
                     <th>Contact Info</th>
                     <th>Status</th>
@@ -70,6 +77,8 @@ $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <tr>
                         <td><?php echo htmlspecialchars($order['order_id']); ?></td>
                         <td><?php echo htmlspecialchars($order['client_id']); ?></td>
+                        <td><?php echo htmlspecialchars($order['client_name'] ?? 'N/A'); ?></td>
+                        <td><?php echo htmlspecialchars($order['driver_name'] ?? 'N/A'); ?></td>
                         <td><?php echo htmlspecialchars($order['address']); ?></td>
                         <td><?php echo htmlspecialchars($order['contact_info']); ?></td>
                         <td><?php echo htmlspecialchars($order['status'] ?? 'Not specified'); ?></td>

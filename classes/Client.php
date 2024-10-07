@@ -21,16 +21,16 @@ class Client {
     }
 
     // Method to create a new client
-    public function createUser($email, $password, $username) {
+    public function createUser($email, $password, $clientName) {
         try {
             // Hash the password
             $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
             // Prepare the SQL statement
-            $stmt = $this->connection->prepare("INSERT INTO clients (email, password, username) VALUES (:email, :password, :username)");
+            $stmt = $this->connection->prepare("INSERT INTO clients (email, password, client_name) VALUES (:email, :password, :client_name)");
             $stmt->bindParam(':email', $email);
             $stmt->bindParam(':password', $hashedPassword);
-            $stmt->bindParam(':username', $username);
+            $stmt->bindParam(':client_name', $clientName);
 
             // Execute the statement
             return $stmt->execute(); // Returns true on success
@@ -62,6 +62,18 @@ class Client {
             return $stmt->fetch(PDO::FETCH_ASSOC); // Return client details
         } catch (Exception $e) {
             throw new Exception("Error fetching client by email: " . $e->getMessage());
+        }
+    }
+
+    // Method to fetch orders for a specific client
+    public function getOrdersByClientId($clientId) {
+        try {
+            $stmt = $this->connection->prepare("SELECT * FROM orders WHERE client_id = :client_id");
+            $stmt->bindParam(':client_id', $clientId);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC); // Return orders
+        } catch (Exception $e) {
+            throw new Exception("Error fetching orders: " . $e->getMessage());
         }
     }
 

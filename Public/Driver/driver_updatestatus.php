@@ -60,42 +60,38 @@ try {
             .btn-logout:hover {
                 background-color: #c82333;
             }
+            .btn-dashboard {
+                background-color: #007bff;
+                color: white;
+            }
+            .btn-dashboard:hover {
+                background-color: #0056b3;
+            }
         </style>
     </head>
     <body>
-
     <div class="container">
-        <h1 class="text-center">Update Your Status</h1>
-        <div class="text-center">
-            <a href="driver_dashboard.php" class="btn btn-secondary">Back to Dashboard</a>
-            <button class="btn btn-logout" onclick="logout()">Logout</button>
-        </div>
-
-        <form method="POST" class="mt-4">
+        <h2>Update Status</h2>
+        <form method="POST">
             <div class="form-group">
-                <label for="status">Status:</label>
-                <input type="text" name="status" id="status" class="form-control" required>
+                <label for="status">Select Status:</label>
+                <select name="status" class="form-control" required>
+                    <option value="available">Available</option>
+                    <option value="busy">Busy</option>
+                    <option value="offline">Offline</option>
+                </select>
             </div>
             <button type="submit" class="btn btn-primary">Update Status</button>
+            <a href="../../Public/index.php" class="btn btn-logout float-right">Logout</a>
         </form>
+        <a href="driver_dashboard.php" class="btn btn-dashboard mt-3">Back to Dashboard</a> <!-- Back to Dashboard link added -->
     </div>
-
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.7/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script>
-        function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                window.location.href = '../../logout.php'; // Redirect to logout script
-            }
-        }
-    </script>
-
     </body>
     </html>
     <?php
 } catch (Exception $e) {
-    // Output the error message for debugging
-    echo "<p>Error: " . htmlspecialchars($e->getMessage()) . "</p>";
+    echo "<p>Error: " . htmlspecialchars($e->getMessage()) . "</p>"; // Display error messages
+} finally {
+    $conn = null; // Ensure the database connection is closed
 }
 ?>

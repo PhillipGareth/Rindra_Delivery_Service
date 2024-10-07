@@ -26,7 +26,7 @@ $conn = $db->getConnection();
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            background-color: #f8f9fa;
+            background-color: #e9ecef;
         }
         .dashboard-header {
             background-color: #007bff;
@@ -34,9 +34,37 @@ $conn = $db->getConnection();
             padding: 20px;
             border-radius: 5px;
             text-align: center;
+            margin-bottom: 20px;
+        }
+        .sidebar {
+            background-color: #343a40;
+            height: 100vh;
+            padding: 15px;
+            position: fixed;
+            width: 220px;
+        }
+        .sidebar h4 {
+            color: white;
+        }
+        .sidebar a {
+            color: #adb5bd;
+            display: block;
+            margin: 10px 0;
+            text-decoration: none;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .sidebar a:hover {
+            background-color: #007bff;
+            color: white;
+        }
+        .content {
+            margin-left: 240px; /* Adjusted for sidebar width */
+            padding: 20px;
         }
         .card {
-            margin-top: 20px;
+            margin-bottom: 20px; /* Space between cards */
         }
         .logout-btn {
             margin-top: 20px;
@@ -45,42 +73,53 @@ $conn = $db->getConnection();
 </head>
 <body>
 
-<div class="container mt-5">
+<div class="sidebar">
+    <h4>Admin Navigation</h4>
+    <a href="admin_assigndriver.php">Assign Driver</a>
+    <a href="admin_createorder.php">Create Order</a>
+    <a href="admin_manageorder.php">Manage Order</a>
+    <a href="admin_vieworder.php">View Orders</a>
+    <a href="../logout.php" class="btn btn-danger btn-block logout-btn">Logout</a>
+</div>
+
+<div class="content">
     <div class="dashboard-header">
         <h1>Welcome to Admin Dashboard</h1>
     </div>
 
-    <div class="row mt-4">
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">
-                    Admin Navigation
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card text-white bg-primary">
+                    <div class="card-header">Create Order</div>
+                    <div class="card-body">
+                        <h5 class="card-title">Order Management</h5>
+                        <p class="card-text">Create new orders efficiently.</p>
+                        <a href="admin_createorder.php" class="btn btn-light">Create Order</a>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <a href="admin_assigndriver.php" class="btn btn-primary btn-block">Assign Driver</a>
-                    <a href="admin_createorder.php" class="btn btn-secondary btn-block">Create Order</a>
-                    <a href="admin_manageorder.php" class="btn btn-info btn-block">Manage Order</a>
-                    <a href="admin_vieworder.php" class="btn btn-warning btn-block">View Orders</a>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-warning">
+                    <div class="card-header">Manage Order</div>
+                    <div class="card-body">
+                        <h5 class="card-title">Order Management</h5>
+                        <p class="card-text">Manage existing orders easily.</p>
+                        <a href="admin_manageorder.php" class="btn btn-light">Manage Order</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-success">
+                    <div class="card-header">View Orders</div>
+                    <div class="card-body">
+                        <h5 class="card-title">Order Overview</h5>
+                        <p class="card-text">Review all current and past orders.</p>
+                        <a href="admin_vieworder.php" class="btn btn-light">View Orders</a>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    Dashboard Overview
-                </div>
-                <div class="card-body">
-                    <h5 class="card-title">Admin Functions</h5>
-                    <p class="card-text">Manage drivers, create orders, and view all order processes from this dashboard.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Logout Form -->
-    <div class="text-center logout-btn">
-        <a href="../logout.php" class="btn btn-danger btn-block">Logout</a>
     </div>
 </div>
 

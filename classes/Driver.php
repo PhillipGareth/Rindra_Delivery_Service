@@ -59,16 +59,16 @@ class Driver {
     }
 
     // Method to create a new driver
-    public function createUser($email, $password, $username) {
+    public function createUser($email, $password, $driver_name) { // Change parameter name to driver_name
         try {
             // Hash the password
             $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
             // Prepare the SQL statement
-            $stmt = $this->connection->prepare("INSERT INTO drivers (email, password, username) VALUES (:email, :password, :username)");
+            $stmt = $this->connection->prepare("INSERT INTO drivers (email, password, driver_name) VALUES (:email, :password, :driver_name)"); // Use driver_name
             $stmt->bindParam(':email', $email);
             $stmt->bindParam(':password', $hashedPassword);
-            $stmt->bindParam(':username', $username);
+            $stmt->bindParam(':driver_name', $driver_name); // Bind the correct parameter
 
             // Execute the statement
             return $stmt->execute(); // Returns true on success

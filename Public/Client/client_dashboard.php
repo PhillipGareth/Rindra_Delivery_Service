@@ -40,44 +40,122 @@ $client = new Client($conn);
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            background-color: #f8f9fa;
+            background-color: #f3f4f6; /* Light grey background */
+            font-family: Arial, sans-serif;
+        }
+        .sidebar {
+            height: 100vh; /* Full height */
+            background-color: #2c3e50; /* Dark blue-gray */
+            padding: 20px;
+            position: fixed; /* Fixed sidebar */
+            transition: all 0.3s ease;
+        }
+        .sidebar h2 {
+            color: #ffffff;
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+        .sidebar a {
+            color: #ffffff;
+            text-decoration: none;
+            display: block;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin: 5px 0;
+            transition: background-color 0.3s;
+        }
+        .sidebar a:hover {
+            background-color: #34495e; /* Slightly lighter on hover */
+        }
+        .main-content {
+            margin-left: 250px; /* Space for the sidebar */
+            padding: 20px; /* Padding for content */
         }
         .dashboard-header {
-            background-color: #007bff;
+            background-color: #007bff; /* Bootstrap primary color */
             color: white;
             padding: 20px;
             border-radius: 5px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         .card {
             margin-top: 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #ffffff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        .logout-btn {
+        .btn-danger {
+            background-color: #e74c3c; /* Red color for logout */
+            border: none;
+        }
+        .btn-danger:hover {
+            background-color: #c0392b; /* Darker red on hover */
+        }
+        .feature-box {
             margin-top: 20px;
+            padding: 20px;
+            color: #ffffff; /* White text */
+            border-radius: 5px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: background-color 0.3s;
+        }
+        .feature-box-1 {
+            background-color: #28a745; /* Green */
+        }
+        .feature-box-2 {
+            background-color: #007bff; /* Blue */
+        }
+        .feature-box-3 {
+            background-color: #ffc107; /* Yellow */
+        }
+        .feature-box:hover {
+            opacity: 0.8; /* Change opacity on hover */
         }
     </style>
 </head>
 <body>
 
-<div class="container mt-5">
-    <div class="dashboard-header text-center">
-        <h1>Welcome to Client Dashboard</h1>
+<div class="sidebar">
+    <h2>Client Dashboard</h2>
+    <a href="client_vieworder.php">View Your Orders</a>
+    <a href="client_profile.php">Edit Profile</a>
+    <a href="client_support.php">Support</a>
+    <form method="post" action="" class="logout-btn">
+        <button type="submit" name="logout" class="btn btn-danger btn-block">Logout</button>
+    </form>
+</div>
+
+<div class="main-content">
+    <div class="dashboard-header">
+        <h1>Welcome to Your Dashboard</h1>
     </div>
 
     <div class="row">
         <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">
-                    User Navigation
-                </div>
-                <div class="card-body">
-                    <a href="client_vieworder.php" class="btn btn-primary btn-block">View Your Orders</a>
-                    <a href="client_profile.php" class="btn btn-secondary btn-block">Edit Profile</a>
-                    <a href="client_support.php" class="btn btn-info btn-block">Support</a>
-                </div>
+            <div class="feature-box feature-box-1">
+                <h4>View Your Orders</h4>
+                <a href="client_vieworder.php" class="btn btn-light btn-block">Go to Orders</a>
             </div>
         </div>
+        <div class="col-md-4">
+            <div class="feature-box feature-box-2">
+                <h4>Edit Profile</h4>
+                <a href="client_profile.php" class="btn btn-light btn-block">Edit Profile</a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-box feature-box-3">
+                <h4>Support</h4>
+                <a href="client_support.php" class="btn btn-light btn-block">Get Support</a>
+            </div>
+        </div>
+    </div>
 
-        <div class="col-md-8">
+    <div class="row">
+        <div class="col-md-12">
             <div class="card">
                 <div class="card-header">
                     Dashboard Overview
@@ -89,11 +167,6 @@ $client = new Client($conn);
             </div>
         </div>
     </div>
-
-    <!-- Logout Form -->
-    <form method="post" action="" class="logout-btn">
-        <button type="submit" name="logout" class="btn btn-danger btn-block">Logout</button>
-    </form>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
