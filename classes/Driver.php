@@ -46,36 +46,41 @@ class Driver {
         }
     }
 
+    // Method to update order status
+    public function updateOrderStatus($orderId, $status) {
+        try {
+            $stmt = $this->connection->prepare("UPDATE orders SET status = :status WHERE order_id = :orderId");
+            $stmt->bindParam(':status', $status);
+            $stmt->bindParam(':orderId', $orderId);
+            return $stmt->execute();
+        } catch (Exception $e) {
+            throw new Exception("Error updating order status: " . $e->getMessage());
+        }
+    }
+
+    // Method to fetch delivery history (orders) for the driver
+    public function getDeliveryHistory($driverId) {
+        try {
+            // Fetch orders where the driver_id matches the logged-in driver
+            $stmt = $this->connection->prepare("SELECT order_id, status FROM orders WHERE driver_id = :driverId");
+            $stmt->bindParam(':driverId', $driverId);
+            $stmt->execute();
+
+            return $stmt->fetchAll(PDO::FETCH_ASSOC); // Return orders assigned to the driver
+        } catch (Exception $e) {
+            throw new Exception("Error fetching delivery history: " . $e->getMessage());
+        }
+    }
+
     // Method to get driver details by ID
-    public function getDriverById($id) {
+    public function getDriverById($driverId) {
         try {
             $stmt = $this->connection->prepare("SELECT * FROM drivers WHERE id = :id LIMIT 1");
-            $stmt->bindParam(':id', $id);
+            $stmt->bindParam(':id', $driverId);
             $stmt->execute();
             return $stmt->fetch(PDO::FETCH_ASSOC); // Return driver details
         } catch (Exception $e) {
             throw new Exception("Error fetching driver by ID: " . $e->getMessage());
         }
     }
-
-    // Method to create a new driver
-    public function createUser($email, $password, $driver_name) { // Change parameter name to driver_name
-        try {
-            // Hash the password
-            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-
-            // Prepare the SQL statement
-            $stmt = $this->connection->prepare("INSERT INTO drivers (email, password, driver_name) VALUES (:email, :password, :driver_name)"); // Use driver_name
-            $stmt->bindParam(':email', $email);
-            $stmt->bindParam(':password', $hashedPassword);
-            $stmt->bindParam(':driver_name', $driver_name); // Bind the correct parameter
-
-            // Execute the statement
-            return $stmt->execute(); // Returns true on success
-        } catch (Exception $e) {
-            throw new Exception("Error creating driver: " . $e->getMessage());
-        }
-    }
-
-    // Additional methods can be added here as needed
 }

@@ -52,68 +52,117 @@ $username = htmlspecialchars($driverDetails['username'] ?? 'Guest');
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            background-color: #f8f9fa; /* Light background */
+            background-color: #f8f9fa;
             font-family: Arial, sans-serif;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards;
         }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
         .dashboard-header {
-            background-color: #007bff; /* Header color */
+            background-color: #007bff;
             color: white;
             padding: 20px;
             text-align: center;
             border-radius: 10px;
             margin-bottom: 20px;
+            transition: background-color 0.3s;
         }
+
+        .dashboard-header:hover {
+            background-color: #0056b3;
+        }
+
         .sidebar {
-            height: 100vh; /* Full height sidebar */
-            background-color: #343a40; /* Dark background for sidebar */
+            height: 100vh;
+            background-color: #343a40;
             padding-top: 20px;
+            transition: width 0.3s;
         }
+
         .sidebar a {
-            color: white; /* Sidebar link color */
+            color: white;
+            transition: background-color 0.3s;
         }
+
         .sidebar a:hover {
-            background-color: #495057; /* Hover effect for sidebar links */
+            background-color: #495057;
         }
+
         .card {
-            border-radius: 10px; /* Card border radius */
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2); /* Card shadow */
-            margin-bottom: 20px; /* Space between cards */
-            height: 200px; /* Fixed height for cards */
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+            height: 200px;
+            transition: transform 0.3s, box-shadow 0.3s;
         }
+
+        .card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.3);
+        }
+
         .card-header {
-            color: white; /* Header text color */
+            color: white;
         }
+
         .card-driver-id {
-            background-color: #007bff; /* Background color for Driver ID */
+            background-color: #007bff;
         }
+
         .card-email {
-            background-color: #28a745; /* Background color for Email */
+            background-color: #28a745;
         }
+
         .card-actions {
-            background-color: #ffc107; /* Background color for Actions */
+            background-color: #ffc107;
         }
+
+        .card-delivery-history {
+            background-color: #17a2b8;
+        }
+
         .card-title {
-            font-size: 2rem; /* Larger font for titles */
-            font-weight: bold; /* Bold font */
+            font-size: 2rem;
+            font-weight: bold;
         }
+
         .card-text {
-            font-size: 0.9rem; /* Smaller font for email text */
+            font-size: 0.9rem;
         }
+
         .btn {
-            border-radius: 20px; /* Button border radius */
-            width: 150px; /* Fixed button width */
+            border-radius: 20px;
+            width: 150px;
+            transition: background-color 0.3s, transform 0.3s;
         }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
         .content-area {
-            margin-left: 250px; /* Space for sidebar */
+            margin-left: 250px;
             padding: 20px;
         }
+
         .card-group {
             display: flex;
-            justify-content: space-between; /* Space between cards */
+            justify-content: space-between;
         }
+
         .card-group .card {
-            flex: 1; /* Equal card size */
-            margin: 0 10px; /* Space between cards */
+            flex: 1;
+            margin: 0 10px;
+        }
+
+        .delivery-history-card {
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -178,6 +227,21 @@ $username = htmlspecialchars($driverDetails['username'] ?? 'Guest');
                     <div class="card-body d-flex flex-column justify-content-center align-items-center">
                         <a href="driver_assigneddriver.php" class="btn btn-info mb-2">View Assigned Drivers</a>
                         <a href="driver_updatestatus.php" class="btn btn-warning">Update Delivery Status</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row delivery-history-card">
+            <div class="col-md-4">
+                <div class="card text-center card-delivery-history">
+                    <div class="card-header">
+                        Delivery History
+                    </div>
+                    <div class="card-body">
+                        <h2 class="card-title">Delivery History</h2>
+                        <p class="card-text">Check your past deliveries</p>
+                        <a href="driver_delivery_history.php" class="btn btn-success">View History</a>
                     </div>
                 </div>
             </div>

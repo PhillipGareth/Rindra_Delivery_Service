@@ -15,13 +15,8 @@ $conn = $db->getConnection();
 // Fetch all drivers
 $drivers = $conn->query("SELECT * FROM drivers")->fetchAll(PDO::FETCH_ASSOC);
 
-// Fetch all orders where driver_id is NULL
-$orders = $conn->query("SELECT * FROM orders WHERE driver_id IS NULL")->fetchAll(PDO::FETCH_ASSOC);
-
-// Debugging: Check if orders are fetched correctly
-if (empty($orders)) {
-    echo "<p>No orders available to assign.</p>";
-}
+// Fetch all orders
+$orders = $conn->query("SELECT * FROM orders")->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -36,6 +31,36 @@ if (empty($orders)) {
 
 <div class="container mt-5">
     <h1>Assign Driver</h1>
+
+    <!-- Display all orders in a table -->
+    <h2>All Orders</h2>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Address</th>
+                <th>Driver ID</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php if (empty($orders)): ?>
+                <tr>
+                    <td colspan="4" class="text-center">No orders available.</td>
+                </tr>
+            <?php else: ?>
+                <?php foreach ($orders as $order): ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars($order['order_id']); ?></td>
+                        <td><?php echo htmlspecialchars($order['address']); ?></td>
+                        <td><?php echo htmlspecialchars($order['driver_id'] ? $order['driver_id'] : 'Not Assigned'); ?></td>
+                        <td><?php echo htmlspecialchars($order['status']); ?></td>
+                    </tr>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </tbody>
+    </table>
+
     <form action="assign_driver_process.php" method="post">
         <div class="form-group">
             <label for="order_id">Select Order:</label>

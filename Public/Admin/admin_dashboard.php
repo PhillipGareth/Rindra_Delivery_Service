@@ -60,11 +60,16 @@ $conn = $db->getConnection();
             color: white;
         }
         .content {
-            margin-left: 240px; /* Adjusted for sidebar width */
+            margin-left: 240px;
             padding: 20px;
         }
         .card {
-            margin-bottom: 20px; /* Space between cards */
+            margin-bottom: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
         }
         .logout-btn {
             margin-top: 20px;
@@ -79,6 +84,7 @@ $conn = $db->getConnection();
     <a href="admin_createorder.php">Create Order</a>
     <a href="admin_manageorder.php">Manage Order</a>
     <a href="admin_vieworder.php">View Orders</a>
+    <a href="admin_delivery_history.php">Delivery History</a> <!-- New link for Delivery History -->
     <a href="../logout.php" class="btn btn-danger btn-block logout-btn">Logout</a>
 </div>
 
@@ -116,6 +122,18 @@ $conn = $db->getConnection();
                         <h5 class="card-title">Order Overview</h5>
                         <p class="card-text">Review all current and past orders.</p>
                         <a href="admin_vieworder.php" class="btn btn-light">View Orders</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card text-white bg-info">
+                    <div class="card-header">Assign Driver</div>
+                    <div class="card-body">
+                        <h5 class="card-title">Driver Assignment</h5>
+                        <p class="card-text">Assign drivers to manage orders.</p>
+                        <a href="admin_assigndriver.php" class="btn btn-light">Assign Driver</a>
                     </div>
                 </div>
             </div>

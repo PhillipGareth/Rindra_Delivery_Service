@@ -62,10 +62,11 @@ $client = new Client($conn);
             padding: 10px 15px;
             border-radius: 5px;
             margin: 5px 0;
-            transition: background-color 0.3s;
+            transition: background-color 0.3s, transform 0.3s; /* Added transform transition */
         }
         .sidebar a:hover {
             background-color: #34495e; /* Slightly lighter on hover */
+            transform: scale(1.05); /* Slightly grow on hover */
         }
         .main-content {
             margin-left: 250px; /* Space for the sidebar */
@@ -85,6 +86,13 @@ $client = new Client($conn);
             border-radius: 5px;
             background-color: #ffffff;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            opacity: 0; /* Start invisible for animation */
+            transform: translateY(20px); /* Start slightly lower for animation */
+            transition: opacity 0.5s ease, transform 0.5s ease; /* Smooth transition */
+        }
+        .card.visible {
+            opacity: 1; /* Fully visible */
+            transform: translateY(0); /* Back to original position */
         }
         .btn-danger {
             background-color: #e74c3c; /* Red color for logout */
@@ -100,19 +108,20 @@ $client = new Client($conn);
             border-radius: 5px;
             text-align: center;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            transition: background-color 0.3s;
+            transition: background-color 0.3s, transform 0.3s; /* Added transform transition */
+            opacity: 0; /* Start invisible for animation */
+            transform: translateY(20px); /* Start slightly lower for animation */
         }
-        .feature-box-1 {
-            background-color: #28a745; /* Green */
-        }
-        .feature-box-2 {
-            background-color: #007bff; /* Blue */
-        }
-        .feature-box-3 {
-            background-color: #ffc107; /* Yellow */
+        .feature-box-1 { background-color: #28a745; } /* Green */
+        .feature-box-2 { background-color: #007bff; } /* Blue */
+        .feature-box-3 { background-color: #ffc107; } /* Yellow */
+        .feature-box-4 { background-color: #17a2b8; } /* Teal for Delivery History */
+        .feature-box.visible {
+            opacity: 1; /* Fully visible */
+            transform: translateY(0); /* Back to original position */
         }
         .feature-box:hover {
-            opacity: 0.8; /* Change opacity on hover */
+            transform: scale(1.05); /* Slightly grow on hover */
         }
     </style>
 </head>
@@ -130,26 +139,32 @@ $client = new Client($conn);
 
 <div class="main-content">
     <div class="dashboard-header">
-        <h1>Welcome to Your Dashboard</h1>
+        <h1>Welcome to Client Dashboard</h1>
     </div>
 
     <div class="row">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="feature-box feature-box-1">
                 <h4>View Your Orders</h4>
                 <a href="client_vieworder.php" class="btn btn-light btn-block">Go to Orders</a>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="feature-box feature-box-2">
                 <h4>Edit Profile</h4>
                 <a href="client_profile.php" class="btn btn-light btn-block">Edit Profile</a>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="feature-box feature-box-3">
                 <h4>Support</h4>
                 <a href="client_support.php" class="btn btn-light btn-block">Get Support</a>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="feature-box feature-box-4">
+                <h4>Delivery History</h4>
+                <a href="client_delivery_history.php" class="btn btn-light btn-block">View History</a>
             </div>
         </div>
     </div>
@@ -172,5 +187,22 @@ $client = new Client($conn);
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Animate feature boxes
+        $('.feature-box').each(function(index) {
+            $(this).delay(index * 200).queue(function() {
+                $(this).addClass('visible');
+                $(this).dequeue();
+            });
+        });
+
+        // Animate card
+        $('.card').delay($('.feature-box').length * 200).queue(function() {
+            $(this).addClass('visible');
+            $(this).dequeue();
+        });
+    });
+</script>
 </body>
 </html>
