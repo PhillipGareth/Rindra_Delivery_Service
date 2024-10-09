@@ -65,15 +65,42 @@ class Client {
         }
     }
 
-    // Method to fetch orders for a specific client
-    public function getOrdersByClientId($clientId) {
+    // Method to fetch all orders for a specific client
+    public function getAllOrders($clientId) {
         try {
             $stmt = $this->connection->prepare("SELECT * FROM orders WHERE client_id = :client_id");
             $stmt->bindParam(':client_id', $clientId);
             $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC); // Return all orders for the client
+        } catch (Exception $e) {
+            throw new Exception("Error fetching all orders: " . $e->getMessage());
+        }
+    }
+
+    // Method to fetch orders for a specific client with pagination
+    public function getOrdersByClientId($clientId, $limit, $offset) {
+        try {
+            $stmt = $this->connection->prepare("SELECT * FROM orders WHERE client_id = :client_id LIMIT :limit OFFSET :offset");
+            $stmt->bindParam(':client_id', $clientId);
+            $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+            $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
+            $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC); // Return orders
         } catch (Exception $e) {
             throw new Exception("Error fetching orders: " . $e->getMessage());
+        }
+    }
+
+    // Method to get total order count for pagination
+    public function getTotalOrdersCount($clientId) {
+        try {
+            $stmt = $this->connection->prepare("SELECT COUNT(*) AS total FROM orders WHERE client_id = :client_id");
+            $stmt->bindParam(':client_id', $clientId);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $result['total'] ?? 0; // Return total count
+        } catch (Exception $e) {
+            throw new Exception("Error fetching total orders count: " . $e->getMessage());
         }
     }
 

@@ -138,9 +138,9 @@ $username = htmlspecialchars($driverDetails['driver_name'] ?? 'Guest');
                 <tbody>
                     <?php foreach ($deliveryHistory as $history): ?>
                         <tr>
-                            <td><?php echo htmlspecialchars($history['order_id']); ?></td>
-                            <td><?php echo htmlspecialchars($history['status']); ?></td>
-                            <td><?php echo htmlspecialchars($history['delivery_date']); ?></td>
+                            <td><?php echo htmlspecialchars($history['order_id'] ?? 'N/A'); ?></td>
+                            <td><?php echo htmlspecialchars($history['status'] ?? 'Unknown'); ?></td>
+                            <td><?php echo htmlspecialchars($history['delivery_date'] ?? 'N/A'); ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

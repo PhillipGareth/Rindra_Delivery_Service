@@ -1,4 +1,4 @@
-<?php
+<?php 
 session_start();
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header("Location: ../index.php?error=You must log in as an admin to access this page.");
@@ -40,13 +40,14 @@ $orders = $conn->query("SELECT * FROM orders")->fetchAll(PDO::FETCH_ASSOC);
                 <th>Order ID</th>
                 <th>Address</th>
                 <th>Driver ID</th>
+                <th>Driver Name</th>
                 <th>Status</th>
             </tr>
         </thead>
         <tbody>
             <?php if (empty($orders)): ?>
                 <tr>
-                    <td colspan="4" class="text-center">No orders available.</td>
+                    <td colspan="5" class="text-center">No orders available.</td>
                 </tr>
             <?php else: ?>
                 <?php foreach ($orders as $order): ?>
@@ -54,6 +55,7 @@ $orders = $conn->query("SELECT * FROM orders")->fetchAll(PDO::FETCH_ASSOC);
                         <td><?php echo htmlspecialchars($order['order_id']); ?></td>
                         <td><?php echo htmlspecialchars($order['address']); ?></td>
                         <td><?php echo htmlspecialchars($order['driver_id'] ? $order['driver_id'] : 'Not Assigned'); ?></td>
+                        <td><?php echo htmlspecialchars($order['driver_name'] ? $order['driver_name'] : 'Not Assigned'); ?></td>
                         <td><?php echo htmlspecialchars($order['status']); ?></td>
                     </tr>
                 <?php endforeach; ?>

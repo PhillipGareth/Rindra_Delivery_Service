@@ -1,6 +1,4 @@
-<?php
-// assign_driver_process.php
-
+<?php 
 session_start();
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header("Location: ../index.php?error=You must log in as an admin to access this page.");
@@ -14,24 +12,29 @@ use RINDRA_DELIVERY_SERVICE\Database\Database;
 $db = new Database();
 $conn = $db->getConnection();
 
-// Check if form data is received
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $orderId = $_POST['order_id'];
-    $driverId = $_POST['driver_id'];
+    $order_id = $_POST['order_id'];
+    $driver_id = $_POST['driver_id'];
 
-    // Prepare and execute the assignment
-    try {
-        $stmt = $conn->prepare("UPDATE orders SET driver_id = :driver_id WHERE order_id = :order_id");
-        $stmt->bindParam(':driver_id', $driverId);
-        $stmt->bindParam(':order_id', $orderId);
-        $stmt->execute();
+    // Fetch the driver's name based on the selected driver ID
+    $stmt = $conn->prepare("SELECT driver_name FROM drivers WHERE id = :driver_id");
+    $stmt->execute([':driver_id' => $driver_id]);
+    $driver = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        // Redirect back with success message
-        header("Location: admin_assigndriver.php?success=Driver assigned successfully!");
-    } catch (Exception $e) {
-        // Handle error
-        header("Location: admin_assigndriver.php?error=" . urlencode("Failed to assign driver: " . $e->getMessage()));
+    if ($driver) {
+        $driver_name = $driver['driver_name'];
+
+        // Update the order with the assigned driver ID and name
+        $update_stmt = $conn->prepare("UPDATE orders SET driver_id = :driver_id, driver_name = :driver_name WHERE order_id = :order_id");
+        $update_stmt->execute([
+            ':driver_id' => $driver_id,
+            ':driver_name' => $driver_name,
+            ':order_id' => $order_id
+        ]);
+
+        header("Location: admin_assigndriver.php?success=Driver assigned successfully.");
+    } else {
+        header("Location: admin_assigndriver.php?error=Driver not found.");
     }
-} else {
-    header("Location: admin_assigndriver.php");
 }
+?>

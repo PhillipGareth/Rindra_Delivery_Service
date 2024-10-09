@@ -130,8 +130,7 @@ $client = new Client($conn);
 <div class="sidebar">
     <h2>Client Dashboard</h2>
     <a href="client_vieworder.php">View Your Orders</a>
-    <a href="client_profile.php">Edit Profile</a>
-    <a href="client_support.php">Support</a>
+    <a href="client_delivery_history.php">Delivery History</a>
     <form method="post" action="" class="logout-btn">
         <button type="submit" name="logout" class="btn btn-danger btn-block">Logout</button>
     </form>
@@ -147,18 +146,6 @@ $client = new Client($conn);
             <div class="feature-box feature-box-1">
                 <h4>View Your Orders</h4>
                 <a href="client_vieworder.php" class="btn btn-light btn-block">Go to Orders</a>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="feature-box feature-box-2">
-                <h4>Edit Profile</h4>
-                <a href="client_profile.php" class="btn btn-light btn-block">Edit Profile</a>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="feature-box feature-box-3">
-                <h4>Support</h4>
-                <a href="client_support.php" class="btn btn-light btn-block">Get Support</a>
             </div>
         </div>
         <div class="col-md-3">

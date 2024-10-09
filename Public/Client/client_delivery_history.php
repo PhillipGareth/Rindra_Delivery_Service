@@ -1,27 +1,35 @@
 <?php
 session_start();
 
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'client') {
-    header("Location: ../index.php?error=You must log in as a client to access this page.");
+// Check if the user is logged in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: ../index.php?error=You must log in to access this page.");
     exit();
 }
 
 require_once '../../Configuration/Database.php';
+require_once '../../classes/Client.php';
+
 use RINDRA_DELIVERY_SERVICE\Database\Database;
+use RINDRA_DELIVERY_SERVICE\Client\Client;
 
 $db = new Database();
 $conn = $db->getConnection();
-$userId = $_SESSION['user_id'];
+$client = new Client($conn);
 
-// Fetch all deliveries for the client
-$sql = "SELECT order_id, address, contact_info, status, driver_name, date_ordered 
-        FROM orders 
-        WHERE client_id = :client_id 
-        ORDER BY date_ordered DESC";
-$stmt = $conn->prepare($sql);
-$stmt->bindParam(':client_id', $userId);
-$stmt->execute();
-$deliveries = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Pagination settings
+$limit = 10; // Number of orders per page
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1; // Current page number
+$offset = ($page - 1) * $limit; // Offset for SQL query
+
+// Get client ID
+$clientId = $_SESSION['user_id']; // Assuming the user ID is stored in the session
+
+// Fetch orders with pagination
+$orders = $client->getOrdersByClientId($clientId, $limit, $offset);
+$totalOrders = $client->getTotalOrdersCount($clientId); // Get total orders count
+$totalPages = ceil($totalOrders / $limit); // Total pages
+
 ?>
 
 <!DOCTYPE html>
@@ -29,46 +37,103 @@ $deliveries = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Client Delivery History</title>
+    <title>Delivery History</title>
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #e9ecef;
+        }
+        .dashboard-header {
+            background-color: #007bff;
+            color: white;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .content {
+            margin-left: 240px;
+            padding: 20px;
+        }
+        .card {
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
-<div class="container">
-    <h1>Delivery History</h1>
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Order ID</th>
-                <th>Address</th>
-                <th>Contact Info</th>
-                <th>Status</th>
-                <th>Driver Name</th>
-                <th>Date Ordered</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php if ($deliveries): ?>
-                <?php foreach ($deliveries as $delivery): ?>
-                    <tr>
-                        <td><?= htmlspecialchars($delivery['order_id']); ?></td>
-                        <td><?= htmlspecialchars($delivery['address']); ?></td>
-                        <td><?= htmlspecialchars($delivery['contact_info']); ?></td>
-                        <td><?= htmlspecialchars($delivery['status']); ?></td>
-                        <td><?= htmlspecialchars($delivery['driver_name']); ?></td>
-                        <td><?= htmlspecialchars(date('Y-m-d H:i:s', strtotime($delivery['date_ordered']))); ?></td>
-                    </tr>
-                <?php endforeach; ?>
-            <?php else: ?>
+
+<div class="content">
+    <div class="dashboard-header">
+        <h1>Delivery History</h1>
+    </div>
+
+    <div class="container">
+        <table class="table table-striped table-bordered">
+            <thead>
                 <tr>
-                    <td colspan="6" class="text-center">No delivery history found.</td>
+                    <th>Order ID</th>
+                    <th>Client Name</th>
+                    <th>Address</th>
+                    <th>Contact Info</th>
+                    <th>Driver Name</th>
+                    <th>Status</th>
+                    <th>Date Ordered</th>
                 </tr>
-            <?php endif; ?>
-        </tbody>
-    </table>
-    
-    <a href="client_dashboard.php" class="btn btn-primary">Return to Dashboard</a>
+            </thead>
+            <tbody>
+                <?php if (!empty($orders)): ?>
+                    <?php foreach ($orders as $order): ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($order['order_id']); ?></td>
+                            <td><?php echo htmlspecialchars($order['client_name']); ?></td>
+                            <td><?php echo htmlspecialchars($order['address']); ?></td>
+                            <td><?php echo htmlspecialchars($order['contact_info']); ?></td>
+                            <td><?php echo htmlspecialchars($order['driver_name'] ?? 'Unassigned'); ?></td>
+                            <td><?php echo htmlspecialchars($order['status']); ?></td>
+                            <td><?php echo htmlspecialchars(date('Y-m-d H:i:s', strtotime($order['date_ordered']))); ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <tr>
+                        <td colspan="7" class="text-center">No orders found.</td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                <?php if ($page > 1): ?>
+                    <li class="page-item">
+                        <a class="page-link" href="?page=<?php echo $page - 1; ?>">Previous</a>
+                    </li>
+                <?php endif; ?>
+
+                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                    <li class="page-item <?php echo $i === $page ? 'active' : ''; ?>">
+                        <a class="page-link" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                    </li>
+                <?php endfor; ?>
+
+                <?php if ($page < $totalPages): ?>
+                    <li class="page-item">
+                        <a class="page-link" href="?page=<?php echo $page + 1; ?>">Next</a>
+                    </li>
+                <?php endif; ?>
+            </ul>
+        </nav>
+
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">Return to Dashboard</h5>
+                <a href="client_dashboard.php" class="btn btn-primary">Dashboard</a> <!-- Updated link -->
+            </div>
+        </div>
+    </div>
 </div>
+
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

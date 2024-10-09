@@ -28,14 +28,14 @@ $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'] ?? '';
     $password = $_POST['password'] ?? '';
-    $username = $_POST['username'] ?? ''; // Change to username
+    $driver_name = $_POST['driver_name'] ?? ''; // Changed to driver_name
 
     $role = $_POST['role'] ?? ''; // New field for user role
 
     // Determine user type and create user accordingly
     if ($role === 'client') {
         $client = new Client($conn);
-        if ($client->createUser($email, $password, $username)) {
+        if ($client->createUser($email, $password, $driver_name)) { // Pass driver_name
             header('Location: index.php'); // Redirect to login page
             exit();
         } else {
@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } elseif ($role === 'admin') {
         $admin = new Admin($conn);
-        if ($admin->createUser($email, $password, $username)) {
+        if ($admin->createUser($email, $password, $driver_name)) { // Pass driver_name
             header('Location: index.php'); // Redirect to login page
             exit();
         } else {
@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } elseif ($role === 'driver') {
         $driver = new Driver($conn);
-        if ($driver->createUser($email, $password, $username)) { // Pass username
+        if ($driver->createUser($email, $password, $driver_name)) { // Pass driver_name
             header('Location: index.php'); // Redirect to login page
             exit();
         } else {
@@ -151,8 +151,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="error"><?php echo htmlspecialchars($error); ?></div>
     <?php endif; ?>
     <form action="" method="post">
-        <label for="username">Username:</label>
-        <input type="text" name="username" required>
+        <label for="driver_name">Driver Name:</label> <!-- Updated label -->
+        <input type="text" name="driver_name" required> <!-- Updated input -->
 
         <label for="email">Email:</label>
         <input type="email" name="email" required>

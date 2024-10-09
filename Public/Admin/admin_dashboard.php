@@ -137,6 +137,16 @@ $conn = $db->getConnection();
                     </div>
                 </div>
             </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-secondary">
+                    <div class="card-header">Delivery History</div>
+                    <div class="card-body">
+                        <h5 class="card-title">Track Deliveries</h5>
+                        <p class="card-text">View the history of all deliveries.</p>
+                        <a href="admin_delivery_history.php" class="btn btn-light">View History</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

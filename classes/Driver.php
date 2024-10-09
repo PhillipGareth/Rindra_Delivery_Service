@@ -20,6 +20,25 @@ class Driver {
         return false; // Login failed
     }
 
+    // Method to create a new driver user
+    public function createUser($email, $password, $driver_name) {
+        try {
+            // Hash the password for security
+            $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
+
+            // Prepare the SQL statement
+            $stmt = $this->connection->prepare("INSERT INTO drivers (email, password, driver_name) VALUES (:email, :password, :driver_name)");
+            $stmt->bindParam(':email', $email);
+            $stmt->bindParam(':password', $hashedPassword);
+            $stmt->bindParam(':driver_name', $driver_name); // Use the correct parameter name
+
+            // Execute the statement
+            return $stmt->execute(); // Returns true on success
+        } catch (Exception $e) {
+            throw new Exception("Error creating driver: " . $e->getMessage());
+        }
+    }
+
     // Method to get driver ID by email
     public function getIdByEmail($email) {
         try {
